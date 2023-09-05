@@ -13,12 +13,6 @@ posts = [
     }
 ]
 
-@app.route('/')
-
-def exibir_entradas():
-    entradas = posts
-    return render_template(exibir_entradas)
-
 
 
     @app.route('/')
