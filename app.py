@@ -1,5 +1,5 @@
-from flask import Flask, render_template
-app = Flask('meu app')
+from flask import Flask, render_template, request, session, flash, redirect, url_for
+app = Flask(__name__)
 
 
 posts = [
@@ -15,10 +15,19 @@ posts = [
 
 
 
-    @app.route('/')
+@app.route('/')
 def exibir_entradas():
-    sql = '''select titulo, texto from entriadas order by id desc'''
-    cur = g.db.execute(sql)
-    entradas = [dict(titulo=titulo, texto=texto)
-                    for titulo, texto in cur.fetchall()]
+    entradas = posts
     return render_template('exibir_entradas.html', entradas=entradas)
+
+@app.route('/login.html', methods= ['GET', 'POST'])
+def login():
+    erro = None
+    if request.method == 'POST':
+        if request.form['username'] == 'admin' and request.form['password'] == 'admin':
+            return 'ok'
+            session['logado'] = True
+            flash('Login efetuado com sucesso')
+            return redirect(url_for('exibir_entradas'))
+        erro = 'Usuário ou senha incorretos'
+    return render_template('login.html', erro=erro)
