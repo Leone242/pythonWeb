@@ -28,8 +28,16 @@ def exibir_entradas():
     
     sql = 'SELECT titulo, texto, data_criacao FROM posts ORDER BY id DESC'
     resultado = g.db.execute(sql)
+    entrada = []
+
+    for titulo, texto, data_criacao in resultado.fetchall():
+        entrada.append({
+            "titulo": titulo,
+            "texto": texto,
+            "data_criacao": data_criacao
+        })
     
-    return render_template('exibir_entradas.html', entradas=entradas)
+    return render_template('exibir_entradas.html', entradas=entrada)
 
 @app.route('/login.html', methods= ['GET', 'POST'])
 def login():
@@ -52,13 +60,16 @@ def logout():
 
 @app.route('/inserir', methods=["POST"])
 def inserir_entradas():
-    if session['logado']:
-        novo_post = {
-            "titulo": request.form['titulo'],
-            "texto": request.form['texto']
-        }
-        posts.append(novo_post)
-        flash("Post criado com sucesso!")
+    if not session['logado']:
+        abort(401)
+   
+    titulo = request.form.get('titulo')
+    texto = request.form.get('texto')
+
+    sql = 'INSERT INTO posts (titulo, texto) values(?, ?)'
+    g.db.execute(sql, [titulo, texto])
+    g.db.commit()    
+    flash("Post criado com sucesso!")
     return redirect(url_for('exibir_entradas'))
 
 
