@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, abort, flash, redirect, url_for
+from flask import Flask, render_template, request, g, session, abort, flash, redirect, url_for
 from posts import posts
 import sqlite3
 
@@ -13,11 +13,22 @@ DATABASE = 'banco.db'
 def conectar():
     return sqlite3.connect(DATABASE)
 
+@app.before_request
+def before_request():
+    g.db = conectar()
+
+@app.teardown_request
+def teardown_request(f):
+    g.db.close()
 
 
 @app.route('/')
 def exibir_entradas():
-    entradas = posts[::-1]
+    #entradas = posts[::-1]
+    
+    sql = 'SELECT titulo, texto, data_criacao FROM posts ORDER BY id DESC'
+    resultado = g.db.execute(sql)
+    
     return render_template('exibir_entradas.html', entradas=entradas)
 
 @app.route('/login.html', methods= ['GET', 'POST'])
